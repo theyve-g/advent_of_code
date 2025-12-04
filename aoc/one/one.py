@@ -63,15 +63,22 @@ MAX_POS = 99
 
 
 def get_new_position(current_pos: int, rotation: int):
-    rotation = rotation % LENGTH
+    zero_count = abs(rotation) // LENGTH
+    is_neg = rotation < 0
+    rotation = (abs(rotation) % LENGTH) * (-1 if is_neg else 1)
 
     new_pos = current_pos + rotation
     if new_pos < 0:
         new_pos += LENGTH
+        if current_pos > 0:
+            zero_count += 1
 
-    new_pos = new_pos % (MAX_POS + 1)
+    if new_pos > MAX_POS:
+        new_pos = new_pos % LENGTH
+        if new_pos > 0:
+            zero_count += 1
 
-    return new_pos
+    return new_pos, zero_count
 
 
 def get_password(lines: list[str]):
@@ -87,11 +94,14 @@ def get_password(lines: list[str]):
         elif direction != "R":
             raise ValueError(f"Invalid direction: {direction}")
 
-        new_pos = get_new_position(current_pos, rotation)
-        print(f"{current_pos} + {line} = {new_pos}")
+        new_pos, zero_count_curr = get_new_position(current_pos, rotation)
 
         if new_pos == 0:
             zero_counts += 1
+
+        zero_counts += zero_count_curr
+
+        print(f"{current_pos} + {line} = {new_pos} ({zero_count_curr}) ({zero_counts})")
 
         current_pos = new_pos
 
